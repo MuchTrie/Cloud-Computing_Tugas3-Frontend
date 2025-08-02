@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Data Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📁 FRONTEND TUGAS 3</h1>
+            <p>Website sederhana untuk menampilkan data dari Backend</p>
+        </div>
+
+        <!-- API Input Section -->
+        <div class="api-section">
+            <h3>🔗 Filter berdasarkan endpoint API:</h3>
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="apiEndpoint" 
+                    class="api-input" 
+                    placeholder="Masukkan endpoint API (contoh: http://localhost:5000/api/users)"
+                    value="">
+                <button class="btn btn-primary" onclick="loadData()">Load Data</button>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn" onclick="setEndpoint('/')">API Info</button>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div id="status"></div>
+
+        <!-- Data Display -->
+        <div class="data-container">
+            <div id="dataDisplay">
+                <div class="empty-state">
+                    <h3>Belum ada data</h3>
+                    <p>Masukkan endpoint API dan klik "Load Data" untuk melihat data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+</body>
+</html>
