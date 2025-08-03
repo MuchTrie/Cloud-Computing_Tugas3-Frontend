@@ -22,15 +22,23 @@
                     type="text" 
                     id="apiEndpoint" 
                     class="api-input" 
-                    placeholder="Masukkan endpoint API (contoh: http://localhost:5000/api/users)"
+                    placeholder="Endpoint akan otomatis diisi: http://10.0.2.252:5000/api/users"
                     value="">
-                <button class="btn btn-primary" onclick="loadData()">Load Data</button>
+                <button class="btn btn-primary" onclick="loadData()">🔄 Load Data</button>
             </div>
             <div class="filter-buttons">
-                <button class="filter-btn" onclick="setEndpoint('/')">API Info</button>
-                <button class="filter-btn active" onclick="setEndpoint('/api/users')">All Users</button>
-                <button class="filter-btn" onclick="setEndpoint('/api/users/1')">User ID 1</button>
-                <button class="filter-btn" onclick="setEndpoint('/api/users/2')">User ID 2</button>
+                <button class="filter-btn" onclick="setEndpoint('/')">ℹ️ API Info</button>
+                <button class="filter-btn active" onclick="setEndpoint('/api/users')">👥 All Users</button>
+                <button class="filter-btn" onclick="setEndpoint('/api/users/1')">👤 User ID 1</button>
+                <button class="filter-btn" onclick="setEndpoint('/api/users/2')">👤 User ID 2</button>
+            </div>
+            
+            <!-- Debug Info -->
+            <div class="debug-info" style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; font-size: 0.9em;">
+                <p><strong>🔧 Debug Info:</strong></p>
+                <p>Backend: <code>http://10.0.2.252:5000</code></p>
+                <p>Press <kbd>F12</kbd> untuk Console Debug</p>
+                <p>Tips: Jika gagal, coba refresh halaman atau cek browser console</p>
             </div>
         </div>
 

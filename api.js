@@ -67,12 +67,23 @@ function updateFilterButtons() {
 // Show status message
 function showStatus(message, type) {
     const statusDiv = document.getElementById('status');
-    statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
     
-    // Auto hide after 5 seconds
-    setTimeout(() => {
-        statusDiv.innerHTML = '';
-    }, 5000);
+    // Create status element with proper styling
+    const statusClass = type === 'error' ? 'error' : 
+                       type === 'success' ? 'success' : 
+                       type === 'loading' ? 'loading' : 'info';
+    
+    statusDiv.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+    
+    // Auto hide after 8 seconds for success messages only
+    if (type === 'success') {
+        setTimeout(() => {
+            statusDiv.innerHTML = '';
+        }, 8000);
+    }
+    
+    // Keep error messages visible longer (don't auto-hide)
+    // Keep loading messages until replaced
 }
 
 // Show loading state
@@ -80,7 +91,7 @@ function showLoading() {
     showStatus('⏳ Sedang memuat data...', 'loading');
 }
 
-// Main function to load data
+// Main function to load data with XMLHttpRequest fallback
 async function loadData() {
     const endpoint = document.getElementById('apiEndpoint').value.trim();
     
@@ -95,23 +106,62 @@ async function loadData() {
     try {
         console.log('🚀 Fetching from:', endpoint);
         
-        const response = await fetch(endpoint, {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+        // Try fetch first, fallback to XMLHttpRequest
+        let data;
+        try {
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            console.log('📡 Fetch Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-        });
-        
-        console.log('📡 Response status:', response.status);
-        console.log('📋 Response headers:', [...response.headers.entries()]);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            
+            data = await response.json();
+        } catch (fetchError) {
+            console.log('⚠️ Fetch failed, trying XMLHttpRequest...', fetchError.message);
+            
+            // Fallback to XMLHttpRequest
+            data = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', endpoint, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('Accept', 'application/json');
+                
+                xhr.onload = function() {
+                    console.log('📡 XHR Response status:', xhr.status);
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const responseData = JSON.parse(xhr.responseText);
+                            resolve(responseData);
+                        } catch (parseError) {
+                            reject(new Error('Invalid JSON response'));
+                        }
+                    } else {
+                        reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    reject(new Error('Network request failed'));
+                };
+                
+                xhr.ontimeout = function() {
+                    reject(new Error('Request timeout'));
+                };
+                
+                xhr.timeout = 10000; // 10 second timeout
+                xhr.send();
+            });
         }
         
-        const data = await response.json();
         console.log('📦 Response data:', data);
         
         // Determine what type of data we got and display accordingly
@@ -139,18 +189,27 @@ async function loadData() {
         }
         
     } catch (error) {
-        console.error('❌ Fetch error:', error);
+        console.error('❌ Final error:', error);
         console.error('Error details:', {
             message: error.message,
+            name: error.name,
             stack: error.stack
         });
         
         let errorMessage = error.message;
-        if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'Koneksi gagal! Periksa: 1) Backend server aktif, 2) Security Group port 5000, 3) Network connectivity';
+        let troubleshootingTips = '';
+        
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage = 'Koneksi gagal - Network Error';
+            troubleshootingTips = '<br>🔍 Troubleshooting:<br>1) Pastikan backend server running<br>2) Check Security Group port 5000<br>3) Periksa URL endpoint benar';
+        } else if (error.message.includes('CORS')) {
+            errorMessage = 'CORS Policy Error';
+            troubleshootingTips = '<br>🔍 Backend perlu configure CORS headers';
+        } else if (error.message.includes('timeout')) {
+            errorMessage = 'Request timeout - Server terlalu lama respond';
         }
         
-        showStatus(`❌ Gagal memuat data: ${errorMessage}`, 'error');
+        showStatus(`❌ ${errorMessage}${troubleshootingTips}`, 'error');
         clearDataDisplay();
     }
 }
@@ -331,6 +390,14 @@ document.addEventListener('keydown', function(e) {
 
 // Auto-load data when page loads
 window.addEventListener('load', function() {
-    // Don't auto load data, let user input endpoint first
-    console.log('Frontend loaded. Please enter API endpoint to load data.');
+    console.log('Frontend loaded.');
+    
+    // Auto load data if endpoint is already filled
+    setTimeout(() => {
+        const endpoint = document.getElementById('apiEndpoint').value.trim();
+        if (endpoint) {
+            console.log('Auto-loading data for:', endpoint);
+            loadData();
+        }
+    }, 1000);
 });
