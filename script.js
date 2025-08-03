@@ -21,22 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     createFilterButtons();
 });
 
-// Create filter buttons for different endpoints
-function createFilterButtons() {
-    const apiSection = document.querySelector('.api-section');
-    
-    const filterDiv = document.createElement('div');
-    filterDiv.innerHTML = `
-        <div class="filter-buttons">
-            <button class="filter-btn active" onclick="setEndpoint('/api/users')">Semua Users</button>
-            <button class="filter-btn" onclick="setEndpoint('/api/users/city/jakarta')">Jakarta</button>
-            <button class="filter-btn" onclick="setEndpoint('/api/users/city/bandung')">Bandung</button>
-            <button class="filter-btn" onclick="setEndpoint('/health')">Health Check</button>
-        </div>
-    `;
-    
-    apiSection.appendChild(filterDiv);
-}
 
 // Set endpoint and update input
 function setEndpoint(endpoint) {
