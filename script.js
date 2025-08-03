@@ -2,7 +2,6 @@
 const API_BASE_URL = '/api/users';
 
 // DOM Elements
-const apiEndpointInput = document.getElementById('apiEndpoint');
 const statusDiv = document.getElementById('status');
 const dataDisplay = document.getElementById('dataDisplay');
 
@@ -13,34 +12,29 @@ function showStatus(message, type = 'info') {
 
 // Load data from API
 async function loadData() {
-    const endpoint = apiEndpointInput.value.trim();
-    
-    if (!endpoint) {
-        showStatus('⚠️ Masukkan endpoint API terlebih dahulu', 'error');
-        return;
-    }
-    
+    const endpoint = API_BASE_URL;
+
     showStatus('🔄 Mengambil data dari backend...', 'loading');
-    
+
     try {
         const response = await fetch(endpoint);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: Server Error`);
         }
-        
+
         const result = await response.json();
         console.log('Response dari backend:', result);
-        
+
         showStatus('✅ Data berhasil dimuat dari backend!', 'success');
-        
+
         // Display data
         if (result.status === 'success' && result.data && Array.isArray(result.data)) {
             displayUserTable(result.data);
         } else {
             displayRawData(result);
         }
-        
+
     } catch (error) {
         console.error('Error:', error);
         showStatus(`❌ Gagal mengambil data: ${error.message}`, 'error');
@@ -59,7 +53,7 @@ function displayUserTable(users) {
         `;
         return;
     }
-    
+
     let tableHTML = `
         <div class="data-table">
             <div class="table-header">
@@ -81,7 +75,7 @@ function displayUserTable(users) {
                     </thead>
                     <tbody>
     `;
-    
+
     users.forEach(user => {
         tableHTML += `
             <tr>
@@ -95,14 +89,14 @@ function displayUserTable(users) {
             </tr>
         `;
     });
-    
+
     tableHTML += `
                     </tbody>
                 </table>
             </div>
         </div>
     `;
-    
+
     dataDisplay.innerHTML = tableHTML;
 }
 
