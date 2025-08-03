@@ -3,21 +3,30 @@ let currentBaseUrl = 'http://10.0.2.252:5000'; // Backend private IP
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    updateFilterButtons();
+    console.log('🌟 Frontend initialized');
+    console.log('🔗 Backend URL:', currentBaseUrl);
     setDefaultEndpoint();
+    
+    // Set active button
+    const allUsersBtn = document.querySelector('button[onclick*="/api/users"]:not([onclick*="/api/users/"])');
+    if (allUsersBtn) {
+        allUsersBtn.classList.add('active');
+    }
 });
 
 // Set API endpoint
 function setEndpoint(endpoint) {
     const input = document.getElementById('apiEndpoint');
-    const baseUrl = input.value ? getBaseUrl(input.value) : currentBaseUrl;
-    input.value = baseUrl + endpoint;
+    input.value = currentBaseUrl + endpoint;
     
     // Update active filter button
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
     
     // Auto load data after setting endpoint
     loadData();
@@ -84,13 +93,26 @@ async function loadData() {
     updateFilterButtons();
     
     try {
-        const response = await fetch(endpoint);
+        console.log('🚀 Fetching from:', endpoint);
+        
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        console.log('📡 Response status:', response.status);
+        console.log('📋 Response headers:', [...response.headers.entries()]);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log('📦 Response data:', data);
         
         // Determine what type of data we got and display accordingly
         if (endpoint.includes('/api/users') && !endpoint.match(/\/api\/users\/\d+$/)) {
@@ -117,7 +139,18 @@ async function loadData() {
         }
         
     } catch (error) {
-        showStatus(`❌ Gagal memuat data: ${error.message}`, 'error');
+        console.error('❌ Fetch error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        
+        let errorMessage = error.message;
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Koneksi gagal! Periksa: 1) Backend server aktif, 2) Security Group port 5000, 3) Network connectivity';
+        }
+        
+        showStatus(`❌ Gagal memuat data: ${errorMessage}`, 'error');
         clearDataDisplay();
     }
 }
