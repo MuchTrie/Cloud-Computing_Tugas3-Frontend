@@ -1,5 +1,5 @@
 // API Configuration untuk Tugas 3
-const API_BASE_URL = 'http://13.210.70.244:5000'; // Backend server IP
+const API_BASE_URL = 'http://10.0.2.252:5000'; // Backend server IP
 
 // DOM Elements
 const apiEndpointInput = document.getElementById('apiEndpoint');
