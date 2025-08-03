@@ -1,6 +1,5 @@
-// API Configuration
-// Backend server IP address
-const API_BASE_URL = 'http://13.210.70.244:5000'; // Your EC2 backend server
+// API Configuration untuk Tugas 3
+const API_BASE_URL = 'http://13.210.70.244:5000'; // Backend server IP
 
 // DOM Elements
 const apiEndpointInput = document.getElementById('apiEndpoint');
@@ -12,8 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set default endpoint
     apiEndpointInput.value = `${API_BASE_URL}/api/users`;
     
-    // Load default data
-    loadData();
+    // Test connection first
+    testConnection();
+    
+    // Then load data
+    setTimeout(loadData, 1000);
     
     // Add filter buttons
     createFilterButtons();
@@ -26,11 +28,10 @@ function createFilterButtons() {
     const filterDiv = document.createElement('div');
     filterDiv.innerHTML = `
         <div class="filter-buttons">
-            <button class="filter-btn active" onclick="setEndpoint('/api/users')">All Users</button>
+            <button class="filter-btn active" onclick="setEndpoint('/api/users')">Semua Users</button>
             <button class="filter-btn" onclick="setEndpoint('/api/users/city/jakarta')">Jakarta</button>
             <button class="filter-btn" onclick="setEndpoint('/api/users/city/bandung')">Bandung</button>
-            <button class="filter-btn" onclick="setEndpoint('/api/users/job/developer')">Developers</button>
-            <button class="filter-btn" onclick="setEndpoint('/api/users/job/manager')">Managers</button>
+            <button class="filter-btn" onclick="setEndpoint('/health')">Health Check</button>
         </div>
     `;
     
@@ -61,7 +62,7 @@ function showStatus(message, type = 'info') {
     }
 }
 
-// Load data from API
+// Load data from API - Simplified for tugas
 async function loadData() {
     const endpoint = apiEndpointInput.value.trim();
     
@@ -71,48 +72,37 @@ async function loadData() {
     }
     
     // Show loading status
-    showStatus('🔄 Sedang memuat data...', 'loading');
+    showStatus('🔄 Mengambil data dari backend...', 'loading');
     
     try {
         const response = await fetch(endpoint, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            mode: 'cors'
+                'Content-Type': 'application/json'
+            }
         });
         
         if (!response.ok) {
-            if (response.status === 0 || response.status === 404) {
-                throw new Error(`Server tidak dapat diakses. Pastikan backend server berjalan di ${API_BASE_URL}`);
-            }
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP ${response.status}: Server Error`);
         }
         
         const result = await response.json();
+        console.log('Response dari backend:', result);
         
         // Show success status
-        showStatus('✅ Data berhasil dimuat', 'success');
+        showStatus('✅ Data berhasil dimuat dari backend!', 'success');
         
-        // Display data based on response structure
-        if (result.status === 'success') {
-            displayData(result.data, result.meta || result.count);
+        // Display data based on response
+        if (result.status === 'success' && result.data) {
+            displayData(result.data, result);
         } else {
-            displayData(result);
+            displayRawData(result);
         }
         
     } catch (error) {
-        console.error('Error loading data:', error);
-        
-        // More specific error messages
-        let errorMessage = error.message;
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            errorMessage = `Tidak dapat terhubung ke server backend di ${API_BASE_URL}. Pastikan server backend berjalan dan dapat diakses.`;
-        }
-        
-        showStatus(`❌ Error: ${errorMessage}`, 'error');
-        displayError(errorMessage);
+        console.error('Error:', error);
+        showStatus(`❌ Gagal mengambil data: ${error.message}`, 'error');
+        displayError(error.message);
     }
 }
 
@@ -308,30 +298,23 @@ function goBack() {
     loadData();
 }
 
-// Test API connection
+// Test API connection - Simplified
 async function testConnection() {
-    showStatus('🔄 Testing connection to backend server...', 'loading');
+    showStatus('🔄 Testing koneksi ke backend...', 'loading');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/health`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            mode: 'cors'
-        });
+        const response = await fetch(`${API_BASE_URL}/health`);
         
         if (response.ok) {
             const result = await response.json();
-            showStatus(`✅ Connected to backend server at ${API_BASE_URL}`, 'success');
-            console.log('API Health Check:', result);
+            showStatus(`✅ Terkoneksi ke backend: ${result.backend_server}`, 'success');
+            console.log('Backend Health Check:', result);
         } else {
-            throw new Error(`Server responded with status ${response.status}`);
+            throw new Error('Backend tidak merespons');
         }
         
     } catch (error) {
-        showStatus(`❌ Cannot connect to backend server at ${API_BASE_URL}. Make sure the server is running and accessible.`, 'error');
+        showStatus(`❌ Tidak dapat terhubung ke backend di ${API_BASE_URL}`, 'error');
         console.error('Connection test failed:', error);
     }
 }
