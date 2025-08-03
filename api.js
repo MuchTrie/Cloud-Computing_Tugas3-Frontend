@@ -1,11 +1,15 @@
 // Global variables
-let currentBaseUrl = 'http://10.0.2.252:5000'; // Backend private IP
+let currentBaseUrl = 'http://13.210.70.244:5000'; // Backend public IP
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🌟 Frontend initialized');
     console.log('🔗 Backend URL:', currentBaseUrl);
     setDefaultEndpoint();
+    
+    // Test backend connectivity immediately
+    console.log('🔍 Testing backend connectivity...');
+    testBackendConnection();
     
     // Set active button
     const allUsersBtn = document.querySelector('button[onclick*="/api/users"]:not([onclick*="/api/users/"])');
@@ -201,12 +205,13 @@ async function loadData() {
         
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             errorMessage = 'Koneksi gagal - Network Error';
-            troubleshootingTips = '<br>🔍 Troubleshooting:<br>1) Pastikan backend server running<br>2) Check Security Group port 5000<br>3) Periksa URL endpoint benar';
+            troubleshootingTips = '<br>🔍 Cek:<br>1) Backend server running di 13.210.70.244:5000<br>2) Security Group allow port 5000<br>3) CORS configuration';
         } else if (error.message.includes('CORS')) {
             errorMessage = 'CORS Policy Error';
             troubleshootingTips = '<br>🔍 Backend perlu configure CORS headers';
         } else if (error.message.includes('timeout')) {
             errorMessage = 'Request timeout - Server terlalu lama respond';
+            troubleshootingTips = '<br>🔍 Cek apakah backend Flask running';
         }
         
         showStatus(`❌ ${errorMessage}${troubleshootingTips}`, 'error');
@@ -401,3 +406,25 @@ window.addEventListener('load', function() {
         }
     }, 1000);
 });
+
+// Test backend connection function
+async function testBackendConnection() {
+    try {
+        console.log('🧪 Testing connection to:', currentBaseUrl);
+        const response = await fetch(currentBaseUrl + '/', {
+            method: 'GET',
+            mode: 'cors'
+        });
+        
+        if (response.ok) {
+            console.log('✅ Backend connection successful!');
+            showStatus('✅ Backend connection successful!', 'success');
+        } else {
+            console.log('⚠️ Backend responded with:', response.status);
+            showStatus(`⚠️ Backend responded with status: ${response.status}`, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Backend connection failed:', error.message);
+        showStatus(`❌ Backend connection failed: ${error.message}`, 'error');
+    }
+}
