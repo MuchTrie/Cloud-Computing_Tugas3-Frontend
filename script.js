@@ -8,18 +8,44 @@ const dataDisplay = document.getElementById('dataDisplay');
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    // Set default endpoint
-    apiEndpointInput.value = `${API_BASE_URL}/api/users`;
-    
-    // Test connection first
-    testConnection();
-    
-    // Then load data
-    setTimeout(loadData, 1000);
+    // Keep input empty, only set placeholder
+    apiEndpointInput.value = '';
     
     // Add filter buttons
     createFilterButtons();
+    
+    // Test connection first
+    testConnection();
 });
+
+// Create filter buttons for different endpoints
+function createFilterButtons() {
+    const apiSection = document.querySelector('.api-section');
+    
+    const filterDiv = document.createElement('div');
+    filterDiv.innerHTML = `
+        <div class="filter-buttons">
+            <button class="filter-btn" onclick="setEndpoint('/api/users')">Semua Users</button>
+            <button class="filter-btn" onclick="setEndpoint('/api/users/city/jakarta')">Jakarta</button>
+            <button class="filter-btn" onclick="setEndpoint('/api/users/city/bandung')">Bandung</button>
+            <button class="filter-btn" onclick="setEndpoint('/health')">Health Check</button>
+        </div>
+    `;
+    
+    apiSection.appendChild(filterDiv);
+}
+
+// Set endpoint and update input
+function setEndpoint(endpoint) {
+    apiEndpointInput.value = `${API_BASE_URL}${endpoint}`;
+    
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Load data automatically
+    loadData();
+}
 
 
 // Set endpoint and update input
@@ -279,6 +305,12 @@ async function viewUserDetail(userId) {
 // Go back to user list
 function goBack() {
     apiEndpointInput.value = `${API_BASE_URL}/api/users`;
+    
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    const allUsersBtn = document.querySelector('.filter-btn');
+    if (allUsersBtn) allUsersBtn.classList.add('active');
+    
     loadData();
 }
 
