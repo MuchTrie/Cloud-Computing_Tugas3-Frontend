@@ -1,7 +1,5 @@
-// API Configuration
-const API_BASE_URL = '/api/users';
-
 // DOM Elements
+const apiEndpointInput = document.getElementById('apiEndpoint');
 const statusDiv = document.getElementById('status');
 const dataDisplay = document.getElementById('dataDisplay');
 
@@ -12,7 +10,12 @@ function showStatus(message, type = 'info') {
 
 // Load data from API
 async function loadData() {
-    const endpoint = API_BASE_URL;
+    const endpoint = apiEndpointInput.value.trim();
+
+    if (!endpoint) {
+        showStatus('⚠️ Masukkan endpoint API terlebih dahulu', 'error');
+        return;
+    }
 
     showStatus('🔄 Mengambil data dari backend...', 'loading');
 
@@ -116,7 +119,7 @@ function displayError(errorMessage) {
         <div class="empty-state">
             <h3>❌ Error</h3>
             <p>${errorMessage}</p>
-            <p>Pastikan backend server berjalan di ${API_BASE_URL}</p>
+            <p>Pastikan backend server berjalan di ${apiEndpointInput.value.trim()}</p>
         </div>
     `;
 }
