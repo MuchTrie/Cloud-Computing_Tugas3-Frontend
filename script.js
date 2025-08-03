@@ -1,6 +1,6 @@
 // API Configuration
-// Update this URL to your backend server IP when deploying to EC2
-const API_BASE_URL = 'http://localhost:5000'; // Change to http://BACKEND_SERVER_IP:5000 for production
+// Backend server IP address
+const API_BASE_URL = 'http://13.210.70.244:5000'; // Your EC2 backend server
 
 // DOM Elements
 const apiEndpointInput = document.getElementById('apiEndpoint');
@@ -77,11 +77,16 @@ async function loadData() {
         const response = await fetch(endpoint, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors'
         });
         
         if (!response.ok) {
+            if (response.status === 0 || response.status === 404) {
+                throw new Error(`Server tidak dapat diakses. Pastikan backend server berjalan di ${API_BASE_URL}`);
+            }
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
@@ -99,8 +104,15 @@ async function loadData() {
         
     } catch (error) {
         console.error('Error loading data:', error);
-        showStatus(`❌ Error: ${error.message}`, 'error');
-        displayError(error.message);
+        
+        // More specific error messages
+        let errorMessage = error.message;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            errorMessage = `Tidak dapat terhubung ke server backend di ${API_BASE_URL}. Pastikan server backend berjalan dan dapat diakses.`;
+        }
+        
+        showStatus(`❌ Error: ${errorMessage}`, 'error');
+        displayError(errorMessage);
     }
 }
 
@@ -261,7 +273,14 @@ async function viewUserDetail(userId) {
     showStatus('🔄 Memuat detail pengguna...', 'loading');
     
     try {
-        const response = await fetch(detailEndpoint);
+        const response = await fetch(detailEndpoint, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors'
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -291,21 +310,28 @@ function goBack() {
 
 // Test API connection
 async function testConnection() {
-    showStatus('🔄 Testing API connection...', 'loading');
+    showStatus('🔄 Testing connection to backend server...', 'loading');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/health`);
+        const response = await fetch(`${API_BASE_URL}/health`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors'
+        });
         
         if (response.ok) {
             const result = await response.json();
-            showStatus('✅ API connection successful', 'success');
+            showStatus(`✅ Connected to backend server at ${API_BASE_URL}`, 'success');
             console.log('API Health Check:', result);
         } else {
-            throw new Error('API server not responding');
+            throw new Error(`Server responded with status ${response.status}`);
         }
         
     } catch (error) {
-        showStatus('❌ API connection failed. Check if backend server is running.', 'error');
+        showStatus(`❌ Cannot connect to backend server at ${API_BASE_URL}. Make sure the server is running and accessible.`, 'error');
         console.error('Connection test failed:', error);
     }
 }

@@ -23,33 +23,7 @@ sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
 
 # Create nginx configuration for frontend
 echo "Configuring nginx..."
-sudo tee /etc/nginx/conf.d/frontend.conf > /dev/null <<EOF
-server {
-    listen 80;
-    server_name _;
-    
-    root /var/www/html;
-    index index.html;
-    
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-    
-    # Enable CORS for API calls
-    location /api/ {
-        add_header 'Access-Control-Allow-Origin' '*';
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS';
-        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
-        
-        if (\$request_method = 'OPTIONS') {
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=utf-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
-    }
-}
-EOF
+sudo cp /home/ec2-user/Frontend/nginx.conf /etc/nginx/conf.d/frontend.conf
 
 # Copy frontend files to nginx directory
 echo "Copying frontend files..."
