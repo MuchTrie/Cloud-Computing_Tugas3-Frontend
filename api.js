@@ -1,15 +1,16 @@
 // Global variables
-let currentBaseUrl = 'http://localhost:5000';
+let currentBaseUrl = 'http://10.0.2.252:5000'; // Backend private IP
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     updateFilterButtons();
+    setDefaultEndpoint();
 });
 
 // Set API endpoint
 function setEndpoint(endpoint) {
     const input = document.getElementById('apiEndpoint');
-    const baseUrl = input.value ? getBaseUrl(input.value) : 'http://localhost:5000';
+    const baseUrl = input.value ? getBaseUrl(input.value) : currentBaseUrl;
     input.value = baseUrl + endpoint;
     
     // Update active filter button
@@ -17,6 +18,17 @@ function setEndpoint(endpoint) {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
+    
+    // Auto load data after setting endpoint
+    loadData();
+}
+
+// Set default endpoint when page loads
+function setDefaultEndpoint() {
+    const input = document.getElementById('apiEndpoint');
+    if (!input.value.trim()) {
+        input.value = currentBaseUrl + '/api/users';
+    }
 }
 
 // Get base URL from current input
