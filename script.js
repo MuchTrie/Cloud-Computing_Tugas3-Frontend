@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://54.252.242.83:5000';
+const API_BASE_URL = '/api/users';
 
 // DOM Elements
 const apiEndpointInput = document.getElementById('apiEndpoint');
